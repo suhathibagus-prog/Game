@@ -1,0 +1,704 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Klik & Kaya - Login dengan Nama & Sandi</title>
+    <style>
+        * {
+            user-select: none;
+            -webkit-tap-highlight-color: transparent;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: linear-gradient(145deg, #1e2a3a 0%, #0f1724 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-family: 'Segoe UI', 'Poppins', system-ui, -apple-system, 'Inter', sans-serif;
+            margin: 0;
+            padding: 20px;
+        }
+
+        /* Modal Login */
+        .login-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.85);
+            backdrop-filter: blur(8px);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .login-card {
+            background: #0f172ae6;
+            border-radius: 48px;
+            padding: 30px 25px;
+            width: 90%;
+            max-width: 340px;
+            border: 1px solid #ffd966aa;
+            box-shadow: 0 25px 45px rgba(0, 0, 0, 0.5);
+        }
+
+        .login-title {
+            font-size: 1.6rem;
+            font-weight: bold;
+            color: #ffd966;
+            text-align: center;
+            margin-bottom: 25px;
+        }
+
+        .login-input {
+            width: 100%;
+            padding: 14px 18px;
+            margin: 12px 0;
+            background: #1e2a3a;
+            border: 1px solid #ffd96666;
+            border-radius: 60px;
+            color: #f9e45b;
+            font-size: 1rem;
+            outline: none;
+        }
+
+        .login-input::placeholder {
+            color: #8aa0b5;
+        }
+
+        .login-btn {
+            width: 100%;
+            background: #ffa559;
+            border: none;
+            border-radius: 60px;
+            padding: 12px;
+            font-weight: bold;
+            font-size: 1.1rem;
+            color: #1f1a0c;
+            margin-top: 20px;
+            cursor: pointer;
+        }
+
+        .login-error {
+            color: #ff8866;
+            text-align: center;
+            font-size: 0.8rem;
+            margin-top: 12px;
+        }
+
+        .login-switch {
+            text-align: center;
+            margin-top: 18px;
+            color: #b9e2ff;
+            font-size: 0.8rem;
+        }
+
+        .login-switch span {
+            color: #ffa559;
+            cursor: pointer;
+            text-decoration: underline;
+        }
+
+        /* Game Container (awal tersembunyi) */
+        .game-container {
+            max-width: 560px;
+            width: 100%;
+            background: rgba(0, 0, 0, 0.55);
+            backdrop-filter: blur(4px);
+            border-radius: 64px;
+            padding: 20px 20px 30px;
+            box-shadow: 0 25px 45px rgba(0, 0, 0, 0.5), inset 0 1px 2px rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 215, 0, 0.3);
+            display: none;
+        }
+
+        .stats {
+            background: #0b1120cc;
+            border-radius: 48px;
+            padding: 15px 20px;
+            margin-bottom: 25px;
+            display: flex;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 12px;
+            backdrop-filter: blur(8px);
+            border: 1px solid #ffd96655;
+        }
+
+        .stat-card {
+            background: #00000066;
+            border-radius: 60px;
+            padding: 8px 18px;
+            text-align: center;
+            flex: 1;
+            min-width: 100px;
+        }
+
+        .stat-label {
+            font-size: 0.7rem;
+            letter-spacing: 1px;
+            font-weight: 500;
+            color: #b9e2ff;
+            text-transform: uppercase;
+        }
+
+        .stat-value {
+            font-size: 1.6rem;
+            font-weight: bold;
+            color: #f9e45b;
+            text-shadow: 0 2px 5px #ff8c00;
+            line-height: 1;
+        }
+
+        .click-area {
+            display: flex;
+            justify-content: center;
+            margin: 15px 0 25px;
+        }
+
+        .click-btn {
+            background: radial-gradient(circle at 30% 20%, #ffd966, #e6a017);
+            width: 180px;
+            height: 180px;
+            border-radius: 50%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            font-size: 2.2rem;
+            font-weight: bold;
+            color: #2c1a0c;
+            box-shadow: 0 20px 30px rgba(0, 0, 0, 0.4), inset 0 -5px 0 #b4621a, inset 0 2px 10px #fff9c0;
+            cursor: pointer;
+            transition: 0.05s linear;
+            text-align: center;
+            border: none;
+        }
+
+        .click-btn:active {
+            transform: scale(0.96);
+        }
+
+        .disabled-click {
+            filter: grayscale(0.6);
+            cursor: not-allowed;
+            pointer-events: none;
+            opacity: 0.7;
+        }
+
+        .cooldown-bar {
+            background: #1e2a32;
+            border-radius: 60px;
+            height: 12px;
+            width: 100%;
+            margin: 8px 0 12px;
+            overflow: hidden;
+        }
+
+        .cooldown-fill {
+            width: 0%;
+            height: 100%;
+            background: #f0b429;
+            border-radius: 60px;
+            transition: width 0.05s linear;
+        }
+
+        .warning-text {
+            font-size: 0.8rem;
+            color: #ffbc6e;
+            text-align: center;
+            margin-top: 5px;
+        }
+
+        .upgrades-section {
+            background: #00000066;
+            border-radius: 40px;
+            padding: 15px;
+            margin-top: 10px;
+        }
+
+        .upgrades-title {
+            font-size: 1rem;
+            font-weight: bold;
+            color: #ffd966;
+            margin-bottom: 12px;
+            display: flex;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .badge-count {
+            background: #ffa559;
+            color: #1f1a0c;
+            border-radius: 40px;
+            padding: 2px 12px;
+            font-size: 0.7rem;
+            font-weight: bold;
+        }
+
+        .tab-nav {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 15px;
+            flex-wrap: wrap;
+        }
+
+        .tab-btn {
+            background: #1e2a3a;
+            border: none;
+            border-radius: 40px;
+            padding: 6px 16px;
+            color: #b9e2ff;
+            font-weight: bold;
+            font-size: 0.75rem;
+            cursor: pointer;
+            flex: 1;
+            text-align: center;
+        }
+
+        .tab-btn.active {
+            background: #ffa559;
+            color: #1f1a0c;
+        }
+
+        .upgrade-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            gap: 10px;
+            max-height: 320px;
+            overflow-y: auto;
+            padding: 4px;
+        }
+
+        .upgrade-card {
+            background: #0f172ae6;
+            border-radius: 20px;
+            padding: 8px 10px;
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+            border-left: 4px solid #ffb347;
+        }
+
+        .upgrade-name {
+            font-weight: bold;
+            font-size: 0.8rem;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .upgrade-desc {
+            font-size: 0.6rem;
+            color: #b9d9ff;
+        }
+
+        .upgrade-cost {
+            font-size: 0.75rem;
+            font-weight: bold;
+            color: #ffd966;
+        }
+
+        .upgrade-button {
+            background: #ffa559;
+            border: none;
+            border-radius: 40px;
+            padding: 5px;
+            font-weight: bold;
+            color: #1f1a0c;
+            margin-top: 4px;
+            text-align: center;
+            font-size: 0.7rem;
+            cursor: pointer;
+        }
+
+        .reset-area {
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        .reset-btn, .logout-btn {
+            background: #2e3b4e;
+            border: none;
+            border-radius: 60px;
+            padding: 8px 18px;
+            color: #ffdbb5;
+            font-weight: bold;
+            cursor: pointer;
+            margin: 0 5px;
+        }
+
+        .logout-btn {
+            background: #5a3e2e;
+        }
+
+        footer {
+            font-size: 0.6rem;
+            text-align: center;
+            color: #aaa;
+            margin-top: 16px;
+        }
+
+        .user-info {
+            text-align: center;
+            margin-bottom: 10px;
+            color: #ffd966;
+            font-size: 0.8rem;
+        }
+    </style>
+</head>
+<body>
+
+<!-- LOGIN / REGISTER MODAL -->
+<div id="loginOverlay" class="login-overlay">
+    <div class="login-card">
+        <div class="login-title">🎮 KLIK & KAYA</div>
+        <input type="text" id="loginName" class="login-input" placeholder="Nama panggilan" autocomplete="off">
+        <input type="password" id="loginPassword" class="login-input" placeholder="Sandi" autocomplete="off">
+        <button id="loginBtn" class="login-btn">MASUK / DAFTAR</button>
+        <div id="loginError" class="login-error"></div>
+    </div>
+</div>
+
+<!-- GAME CONTAINER (muncul setelah login) -->
+<div id="gameContainer" class="game-container">
+    <div class="user-info" id="userInfoDisplay"></div>
+    <div class="stats">
+        <div class="stat-card"><div class="stat-label">💰 UANG</div><div class="stat-value" id="moneyDisplay">0</div></div>
+        <div class="stat-card"><div class="stat-label">🖱️ KLIK TOTAL</div><div class="stat-value" id="totalClicksDisplay">0</div></div>
+        <div class="stat-card"><div class="stat-label">💵 PER 5 KLIK</div><div class="stat-value" id="rewardPer10Display">1</div></div>
+    </div>
+
+    <div class="click-area">
+        <div class="click-btn" id="clickButton">👆<br>KLIK</div>
+    </div>
+
+    <div class="cooldown-bar">
+        <div class="cooldown-fill" id="cooldownFill"></div>
+    </div>
+    <div class="warning-text" id="cooldownMessage">✨ Klik sebanyak-banyaknya! ✨</div>
+
+    <div class="upgrades-section">
+        <div class="upgrades-title">
+            <span>📈 TOKO UPGRADE (bisa beli berulang)</span>
+            <span class="badge-count" id="upgradeCountBadge">0 level</span>
+        </div>
+        <div class="tab-nav" id="tabNav">
+            <button class="tab-btn active" data-tab="0">1-10</button>
+            <button class="tab-btn" data-tab="1">11-20</button>
+            <button class="tab-btn" data-tab="2">21-30</button>
+            <button class="tab-btn" data-tab="3">31-40</button>
+            <button class="tab-btn" data-tab="4">41-50</button>
+        </div>
+        <div class="upgrade-grid" id="upgradeList"></div>
+    </div>
+
+    <div class="reset-area">
+        <button class="reset-btn" id="resetBtn">🔄 RESET GAME</button>
+        <button class="logout-btn" id="logoutBtn">🚪 LOGOUT</button>
+    </div>
+    <footer>⚡ Setiap 50 KLIK → jeda 5 DETIK | 💰 Uang tiap 5 KLIK | 🔁 Upgrade bisa dibeli berulang</footer>
+</div>
+
+<script>
+    // ==================== SISTEM LOGIN (NAMA & SANDI SAJA) ====================
+    let currentUser = null;
+    
+    // Ambil data akun dari localStorage
+    function getAccounts() {
+        const acc = localStorage.getItem("game_accounts");
+        return acc ? JSON.parse(acc) : {};
+    }
+    
+    function saveAccounts(accounts) {
+        localStorage.setItem("game_accounts", JSON.stringify(accounts));
+    }
+    
+    // Simpan data game per user
+    function saveGameData(username, data) {
+        const allGameData = localStorage.getItem("game_data_all");
+        const gameData = allGameData ? JSON.parse(allGameData) : {};
+        gameData[username] = data;
+        localStorage.setItem("game_data_all", JSON.stringify(gameData));
+    }
+    
+    function loadGameData(username) {
+        const allGameData = localStorage.getItem("game_data_all");
+        if (!allGameData) return null;
+        const gameData = JSON.parse(allGameData);
+        return gameData[username] || null;
+    }
+    
+    // ==================== GENERATE 50 UPGRADE (LEVELING) ====================
+    function createUpgrade(id, name, type, baseValue, baseCost, descSuffix) {
+        return {
+            id: id,
+            name: name,
+            type: type,
+            baseValue: baseValue,
+            baseCost: baseCost,
+            level: 0,
+            getCurrentValue: function() { return this.baseValue * this.level; },
+            getCurrentCost: function() { return Math.floor(this.baseCost * Math.pow(1.25, this.level)); },
+            descSuffix: descSuffix
+        };
+    }
+    
+    const upgradesData = [];
+    const powerNames = ["🍀 Koin Pemula","⭐ Bintang Klik","💎 Batu Bertuah","🔥 Semangat Klik","⚡ Energi Murni",
+        "🌙 Cincin Perak","☀️ Liontin Matahari","💪 Sarung Tangan","👟 Sepatu Cepat","🎯 Target Akurat",
+        "📿 Manik Keberuntungan","🔮 Bola Kristal","🕯️ Lilin Ajaib","🗡️ Pedang Uang","🛡️ Perisai Profit",
+        "🧙 Topi Penyihir","🐉 Naga Koin","🦅 Elang Emas","🐺 Serigala Perak","🐢 Kura-kua Hoki",
+        "🐘 Gajah Milyader","🦁 Singa Kekayaan","🐟 Ikan Mas","🦄 Unicorn Berkah","👑 Mahkota Ratu"];
+    for (let i = 0; i < 25; i++) {
+        let baseVal = 1 + Math.floor(i / 4);
+        if (i >= 15) baseVal = 5 + (i-15);
+        if (i >= 20) baseVal = 12 + (i-20) * 2;
+        let baseCost = 30 + i * 12;
+        if (i > 12) baseCost = 180 + (i-12) * 25;
+        if (i > 20) baseCost = 450 + (i-20) * 60;
+        upgradesData.push(createUpgrade(upgradesData.length, powerNames[i], "power", baseVal, Math.floor(baseCost), `+${baseVal} per 5 klik per level`));
+    }
+    const cdNames = ["⏳ Kurangi Jeda I","⏳ Kurangi Jeda II","⏳ Kurangi Jeda III","⌛ Zen Timer","⏰ Cepat Kilat","🌀 Pusaran Waktu","⚡ Akselerasi Jeda","🌟 Bintang Fajar","🌠 Meteor Waktu","💫 Lubang Cacing","✨ Kecepatan Cahaya","🎯 Instan Stop"];
+    for (let i = 0; i < 12; i++) {
+        let reduceVal = 0.2 + (i * 0.1);
+        if (i > 5) reduceVal = 0.9 + (i-5) * 0.15;
+        reduceVal = Math.min(reduceVal, 2.2);
+        let baseCost = 150 + i * 70;
+        if (i > 6) baseCost = 600 + (i-6) * 120;
+        upgradesData.push(createUpgrade(upgradesData.length, cdNames[i], "reduceCooldown", parseFloat(reduceVal.toFixed(1)), Math.floor(baseCost), `kurangi jeda ${reduceVal.toFixed(1)} detik per level`));
+    }
+    const multNames = ["x2 Pengganda","x3 Lipat Ganda","x2 Bonus","x2 Keajaiban","x3 Ledakan","x2 Ultimate","x4 Mega","x5 Jackpot"];
+    const multValues = [2,3,2,2,3,2,4,5];
+    for (let i = 0; i < 8; i++) {
+        let baseCost = 400 + i * 350;
+        if (i > 4) baseCost = 2000 + (i-4) * 800;
+        upgradesData.push(createUpgrade(upgradesData.length, multNames[i], "multiplier", multValues[i], Math.floor(baseCost), `kalikan reward x${multValues[i]} per level`));
+    }
+    const specialNames = ["🌈 Pelangi Hoki","💥 Ledakan Rejeki","🎲 Dadu Keberuntungan","🏆 Piala Juara","⭐ Bintang Super"];
+    const specialTypes = ["power","power","multiplier","reduceCooldown","power"];
+    const specialValues = [8,12,2,0.8,20];
+    const specialCosts = [500,900,1500,1200,2500];
+    for (let i = 0; i < 5; i++) {
+        upgradesData.push(createUpgrade(upgradesData.length, specialNames[i], specialTypes[i], specialValues[i], specialCosts[i], specialTypes[i]==="power"?`+${specialValues[i]} per 5 klik per level`:(specialTypes[i]==="multiplier"?`kalikan reward x${specialValues[i]} per level`:`kurangi jeda ${specialValues[i]} detik per level`)));
+    }
+    while(upgradesData.length < 50) upgradesData.push(createUpgrade(upgradesData.length, `✨ Bonus ${upgradesData.length+1}`, "power", 3+Math.floor(upgradesData.length/10), 200+upgradesData.length*30, `+${3+Math.floor(upgradesData.length/10)} per 5 klik per level`));
+    while(upgradesData.length > 50) upgradesData.pop();
+    
+    // ==================== GAME STATE ====================
+    let money = 0, totalClicks = 0, rewardPer5Clicks = 1;
+    let isCooldown = false, cooldownRemaining = 0, cooldownTimer = null, cooldownDuration = 5;
+    
+    function recalcStats() {
+        let flat = 0, mult = 1, cdRed = 0;
+        for(let up of upgradesData) {
+            if(up.level > 0) {
+                if(up.type === "power") flat += up.getCurrentValue();
+                else if(up.type === "multiplier") mult *= Math.pow(up.baseValue, up.level);
+                else if(up.type === "reduceCooldown") cdRed += up.getCurrentValue();
+            }
+        }
+        rewardPer5Clicks = Math.floor((1 + flat) * mult);
+        if(rewardPer5Clicks < 1) rewardPer5Clicks = 1;
+        let newCd = 5 - cdRed;
+        if(newCd < 0.8) newCd = 0.8;
+        cooldownDuration = parseFloat(newCd.toFixed(1));
+        document.getElementById("rewardPer10Display").innerText = rewardPer5Clicks;
+        let totalLevels = upgradesData.reduce((s,u)=>s+u.level,0);
+        document.getElementById("upgradeCountBadge").innerHTML = `${totalLevels} level`;
+    }
+    
+    function updateUI() {
+        document.getElementById("moneyDisplay").innerText = Math.floor(money);
+        document.getElementById("totalClicksDisplay").innerText = totalClicks;
+    }
+    
+    function showMessage(msg, dur=800) {
+        let msgDiv = document.getElementById("cooldownMessage");
+        if(!msgDiv) return;
+        let orig = "✨ Siap klik! ✨";
+        msgDiv.innerHTML = msg;
+        setTimeout(()=>{ if(!isCooldown) msgDiv.innerHTML = orig; }, dur);
+    }
+    
+    function enableClick(enable) {
+        let btn = document.getElementById("clickButton");
+        if(enable) btn.classList.remove("disabled-click");
+        else btn.classList.add("disabled-click");
+    }
+    
+    function updateCooldownUI(rem) {
+        let fill = document.getElementById("cooldownFill");
+        let msg = document.getElementById("cooldownMessage");
+        if(rem <= 0) {
+            fill.style.width = "0%";
+            if(!isCooldown) msg.innerHTML = "✨ Siap klik! ✨";
+        } else {
+            fill.style.width = (rem/cooldownDuration)*100 + "%";
+            msg.innerHTML = `⏳ JEDA: ${rem.toFixed(1)} detik tersisa ...`;
+        }
+    }
+    
+    function startCooldown() {
+        if(isCooldown) return;
+        isCooldown = true;
+        cooldownRemaining = cooldownDuration;
+        enableClick(false);
+        updateCooldownUI(cooldownRemaining);
+        if(cooldownTimer) clearInterval(cooldownTimer);
+        cooldownTimer = setInterval(()=>{
+            if(cooldownRemaining <= 0.05) {
+                clearInterval(cooldownTimer); cooldownTimer=null;
+                isCooldown=false; enableClick(true); updateCooldownUI(0);
+                showMessage("✅ Jeda selesai!", 600);
+                saveCurrentGame();
+            } else {
+                cooldownRemaining = Math.max(0, cooldownRemaining-0.1);
+                updateCooldownUI(cooldownRemaining);
+            }
+        },100);
+    }
+    
+    function performClick() {
+        if(isCooldown) { showMessage(`⏳ JEDA! ${cooldownRemaining.toFixed(1)} dtk`,600); return; }
+        totalClicks++;
+        if(totalClicks % 5 === 0) {
+            let earned = rewardPer5Clicks;
+            money += earned;
+            showMessage(`+${earned} 💰 (hadiah 5 klik!)`,400);
+            let moneyEl = document.getElementById("moneyDisplay");
+            moneyEl.classList.add("money-pop");
+            setTimeout(()=>moneyEl.classList.remove("money-pop"),200);
+        }
+        updateUI();
+        if(totalClicks % 250 === 0 && totalClicks > 0) startCooldown();
+        saveCurrentGame();
+        let btn = document.getElementById("clickButton");
+        btn.style.transform = "scale(0.95)";
+        setTimeout(()=>btn.style.transform="",80);
+    }
+    
+    let currentTab = 0;
+    function renderUpgrades() {
+        let container = document.getElementById("upgradeList");
+        if(!container) return;
+        container.innerHTML = "";
+        let start = currentTab*10, end = Math.min(start+10, upgradesData.length);
+        for(let i=start; i<end; i++) {
+            let up = upgradesData[i];
+            let effectText = up.type==="power"?`+${up.getCurrentValue()} per 5 klik`:(up.type==="multiplier"?`x${Math.pow(up.baseValue, up.level).toFixed(0)} total`:`-${up.getCurrentValue()} detik jeda`);
+            let card = document.createElement("div");
+            card.className = "upgrade-card";
+            card.innerHTML = `
+                <div class="upgrade-name"><span>${up.name}</span><span style="color:#ffd966;">Lv.${up.level}</span></div>
+                <div class="upgrade-desc">${up.descSuffix}</div>
+                <div class="upgrade-desc" style="color:#f9e45b;">✨ ${effectText}</div>
+                <div class="upgrade-cost">💰 ${up.getCurrentCost()} uang</div>
+                <div class="upgrade-button" data-id="${up.id}">${up.level === 0 ? 'BELI' : 'BELI LAGI'}</div>
+            `;
+            card.querySelector(".upgrade-button").addEventListener("click", (e)=>{
+                e.stopPropagation();
+                if(isCooldown) { showMessage("Tidak bisa upgrade saat jeda!",600); return; }
+                let cost = up.getCurrentCost();
+                if(money < cost) { showMessage(`💰 kurang ${cost} uang`,600); return; }
+                money -= cost;
+                up.level++;
+                recalcStats();
+                updateUI();
+                renderUpgrades();
+                showMessage(`🎉 ${up.name} level ${up.level}!`,800);
+                saveCurrentGame();
+            });
+            container.appendChild(card);
+        }
+    }
+    
+    function resetGame() {
+        if(isCooldown) { showMessage("Tidak bisa reset saat jeda!",600); return; }
+        if(cooldownTimer) clearInterval(cooldownTimer);
+        isCooldown=false; cooldownRemaining=0;
+        money=0; totalClicks=0;
+        for(let up of upgradesData) up.level=0;
+        recalcStats(); updateUI(); renderUpgrades(); enableClick(true); updateCooldownUI(0);
+        showMessage("🔄 Game direset!",1000);
+        saveCurrentGame();
+    }
+    
+    function saveCurrentGame() {
+        if(!currentUser) return;
+        let save = { money, totalClicks, upgradesLevel: upgradesData.map(u=>({id:u.id, level:u.level})) };
+        saveGameData(currentUser, save);
+    }
+    
+    function loadCurrentGame() {
+        let data = loadGameData(currentUser);
+        if(data) {
+            money = data.money ?? 0;
+            totalClicks = data.totalClicks ?? 0;
+            if(data.upgradesLevel) {
+                for(let s of data.upgradesLevel) {
+                    let up = upgradesData.find(u=>u.id===s.id);
+                    if(up) up.level = s.level;
+                }
+            }
+        } else { money=0; totalClicks=0; upgradesData.forEach(u=>u.level=0); }
+        recalcStats(); updateUI(); renderUpgrades(); enableClick(true); updateCooldownUI(0);
+        if(cooldownTimer) clearInterval(cooldownTimer);
+        isCooldown=false;
+    }
+    
+    // ==================== LOGIN HANDLER ====================
+    function handleLogin() {
+        let name = document.getElementById("loginName").value.trim();
+        let pwd = document.getElementById("loginPassword").value.trim();
+        let errorDiv = document.getElementById("loginError");
+        if(!name || !pwd) { errorDiv.innerText = "Isi nama dan sandi!"; return; }
+        let accounts = getAccounts();
+        if(accounts[name]) {
+            if(accounts[name] !== pwd) { errorDiv.innerText = "Sandi salah!"; return; }
+        } else {
+            accounts[name] = pwd;
+            saveAccounts(accounts);
+        }
+        currentUser = name;
+        document.getElementById("loginOverlay").style.display = "none";
+        document.getElementById("gameContainer").style.display = "block";
+        document.getElementById("userInfoDisplay").innerHTML = `👤 ${name} | Level: ${upgradesData.reduce((s,u)=>s+u.level,0)}`;
+        loadCurrentGame();
+    }
+    
+    function logout() {
+        if(cooldownTimer) clearInterval(cooldownTimer);
+        currentUser = null;
+        document.getElementById("loginOverlay").style.display = "flex";
+        document.getElementById("gameContainer").style.display = "none";
+        document.getElementById("loginName").value = "";
+        document.getElementById("loginPassword").value = "";
+        document.getElementById("loginError").innerText = "";
+    }
+    
+    document.getElementById("loginBtn").addEventListener("click", handleLogin);
+    document.getElementById("resetBtn")?.addEventListener("click", resetGame);
+    document.getElementById("logoutBtn")?.addEventListener("click", logout);
+    document.getElementById("clickButton")?.addEventListener("click", performClick);
+    document.querySelectorAll(".tab-btn").forEach(btn=>{
+        btn.addEventListener("click",()=>{
+            document.querySelectorAll(".tab-btn").forEach(b=>b.classList.remove("active"));
+            btn.classList.add("active");
+            currentTab = parseInt(btn.dataset.tab);
+            renderUpgrades();
+        });
+    });
+    
+    // style tambahan
+    const style = document.createElement('style');
+    style.textContent = `.money-pop { animation: pop 0.2s ease-out; } @keyframes pop { 0%{transform:scale(1)} 50%{transform:scale(1.1);text-shadow:0 0 8px gold} 100%{transform:scale(1)} }`;
+    document.head.appendChild(style);
+</script>
+</body>
+</html>
